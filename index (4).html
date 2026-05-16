@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expense Tracker</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.19.0/fonts/tabler-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --bg2: #f5f5f3;
+      --bg3: #efefec;
+      --text: #1a1a18;
+      --text2: #6b6b66;
+      --border: rgba(0,0,0,0.12);
+      --border2: rgba(0,0,0,0.22);
+      --accent: #185FA5;
+      --accent-bg: #E6F1FB;
+      --accent-text: #0C447C;
+      --danger: #A32D2D;
+      --danger-bg: #FCEBEB;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1c1a;
+        --bg2: #252523;
+        --bg3: #2e2e2b;
+        --text: #f0f0ed;
+        --text2: #9a9a94;
+        --border: rgba(255,255,255,0.10);
+        --border2: rgba(255,255,255,0.20);
+        --accent: #378ADD;
+        --accent-bg: #042C53;
+        --accent-text: #B5D4F4;
+        --danger: #E24B4A;
+        --danger-bg: #501313;
+      }
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg3);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container { max-width: 900px; margin: 0 auto; }
+
+    h1 { font-size: 26px; font-weight: 600; color: var(--text); }
+    h1 span { color: var(--text2); font-weight: 400; font-size: 14px; display: block; margin-top: 4px; }
+
+    .top-bar { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+
+    button {
+      font-family: var(--font);
+      font-size: 14px;
+      padding: 9px 18px;
+      border-radius: var(--radius-md);
+      border: 0.5px solid var(--border2);
+      background: var(--bg);
+      color: var(--text);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s;
+    }
+    button:hover { background: var(--bg2); }
+    button.primary { background: var(--accent-bg); color: var(--accent-text); border-color: var(--accent); }
+    button.primary:hover { opacity: 0.85; }
+    button.danger { background: var(--danger-bg); color: var(--danger); border-color: var(--danger); font-size: 12px; padding: 5px 10px; }
+
+    .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    @media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; } }
+
+    label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 4px; }
+    input, select {
+      font-family: var(--font);
+      font-size: 14px;
+      width: 100%;
+      padding: 8px 10px;
+      border: 0.5px solid var(--border2);
+      border-radius: var(--radius-md);
+      background: var(--bg2);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(24,95,165,0.15); }
+
+    .form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+    .stat-card { background: var(--bg2); border-radius: var(--radius-md); padding: 1rem; }
+    .stat-card p:first-child { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+    .stat-card p:last-child { font-size: 22px; font-weight: 600; color: var(--text); }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1.5rem; }
+    @media (max-width: 620px) { .two-col { grid-template-columns: 1fr; } }
+
+    .section-label { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 1rem; }
+
+    .bar-item { margin-bottom: 10px; }
+    .bar-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 3px; }
+    .bar-track { background: var(--bg2); border-radius: 4px; height: 6px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+
+    .recent-item { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 0.5px solid var(--border); }
+    .recent-item:last-child { border-bottom: none; }
+    .recent-desc { font-weight: 500; font-size: 13px; color: var(--text); }
+    .recent-date { font-size: 11px; color: var(--text2); }
+    .recent-amt { font-weight: 600; font-size: 13px; }
+
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; }
+    th { text-align: left; padding: 7px 8px; font-weight: 500; color: var(--text2); border-bottom: 0.5px solid var(--border2); }
+    td { padding: 9px 8px; color: var(--text); border-bottom: 0.5px solid var(--border); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    tr:last-child td { border-bottom: none; }
+
+    .table-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 8px; }
+    .table-top select { width: auto; font-size: 12px; padding: 5px 10px; }
+
+    .empty { text-align: center; color: var(--text2); padding: 2.5rem 0; font-size: 14px; }
+
+    #add-form { display: none; margin-bottom: 1.5rem; }
+
+    /* Animate form in */
+    #add-form.open { display: block; animation: slideDown 0.2s ease; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="top-bar">
+    <h1>💸 Expense Tracker <span>Track where your money goes</span></h1>
+    <button onclick="toggleForm()" id="add-btn">
+      <i class="ti ti-plus"></i> Add Expense
+    </button>
+  </div>
+
+  <div id="add-form" class="card">
+    <div class="form-grid">
+      <div>
+        <label>Description</label>
+        <input id="inp-desc" type="text" placeholder="e.g. Grocery run" />
+      </div>
+      <div>
+        <label>Amount (₹)</label>
+        <input id="inp-amt" type="number" placeholder="0" min="0" step="0.01" />
+      </div>
+      <div>
+        <label>Category</label>
+        <select id="inp-cat">
+          <option value="Food">🍔 Food</option>
+          <option value="Transport">🚗 Transport</option>
+          <option value="Shopping">🛍️ Shopping</option>
+          <option value="Health">🏥 Health</option>
+          <option value="Bills">⚡ Bills</option>
+          <option value="Entertainment">🎮 Entertainment</option>
+          <option value="Other">📦 Other</option>
+        </select>
+      </div>
+      <div>
+        <label>Date</label>
+        <input id="inp-date" type="date" />
+      </div>
+    </div>
+    <div class="form-actions">
+      <button onclick="toggleForm()">Cancel</button>
+      <button class="primary" onclick="addExpense()"><i class="ti ti-device-floppy"></i> Save</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card"><p>Total Spent</p><p id="stat-total">₹0</p></div>
+    <div class="stat-card"><p>This Month</p><p id="stat-month">₹0</p></div>
+    <div class="stat-card"><p>Transactions</p><p id="stat-count">0</p></div>
+    <div class="stat-card"><p>Avg per Entry</p><p id="stat-avg">₹0</p></div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <p class="section-label">Spending by Category</p>
+      <div id="cat-bars"><p class="empty" style="padding:1rem 0;">No data yet</p></div>
+    </div>
+    <div class="card">
+      <p class="section-label">Recent Entries</p>
+      <div id="recent-list"><p class="empty" style="padding:1rem 0;">No expenses yet</p></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="table-top">
+      <p class="section-label" style="margin:0;">All Expenses</p>
+      <select id="filter-cat" onchange="render()">
+        <option value="All">All Categories</option>
+        <option value="Food">Food</option>
+        <option value="Transport">Transport</option>
+        <option value="Shopping">Shopping</option>
+        <option value="Health">Health</option>
+        <option value="Bills">Bills</option>
+        <option value="Entertainment">Entertainment</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div id="expense-table">
+      <p class="empty">Add your first expense above ↑</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let expenses = JSON.parse(localStorage.getItem('xpns') || '[]');
+
+  const catColors = {
+    Food:'#1D9E75', Transport:'#378ADD', Shopping:'#D4537E',
+    Health:'#D85A30', Bills:'#BA7517', Entertainment:'#7F77DD', Other:'#888780'
+  };
+  const emojis = {
+    Food:'🍔', Transport:'🚗', Shopping:'🛍️', Health:'🏥',
+    Bills:'⚡', Entertainment:'🎮', Other:'📦'
+  };
+
+  function toggleForm() {
+    const f = document.getElementById('add-form');
+    f.classList.toggle('open');
+    if (f.classList.contains('open')) {
+      document.getElementById('inp-date').value = new Date().toISOString().split('T')[0];
+      setTimeout(() => document.getElementById('inp-desc').focus(), 50);
+    }
+  }
+
+  function addExpense() {
+    const desc = document.getElementById('inp-desc').value.trim();
+    const amt  = parseFloat(document.getElementById('inp-amt').value);
+    const cat  = document.getElementById('inp-cat').value;
+    const date = document.getElementById('inp-date').value;
+    if (!desc || !amt || amt <= 0 || !date) { alert('Please fill in all fields.'); return; }
+    expenses.unshift({ id: Date.now(), desc, amt, cat, date });
+    localStorage.setItem('xpns', JSON.stringify(expenses));
+    document.getElementById('inp-desc').value = '';
+    document.getElementById('inp-amt').value = '';
+    document.getElementById('add-form').classList.remove('open');
+    render();
+  }
+
+  function deleteExpense(id) {
+    if (!confirm('Delete this expense?')) return;
+    expenses = expenses.filter(e => e.id !== id);
+    localStorage.setItem('xpns', JSON.stringify(expenses));
+    render();
+  }
+
+  function fmt(n) { return '₹' + Math.round(n).toLocaleString('en-IN'); }
+
+  function render() {
+    const filter = document.getElementById('filter-cat').value;
+    const filtered = filter === 'All' ? expenses : expenses.filter(e => e.cat === filter);
+    const total = expenses.reduce((s, e) => s + e.amt, 0);
+    const now = new Date();
+    const monthTotal = expenses
+      .filter(e => { const d = new Date(e.date); return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear(); })
+      .reduce((s, e) => s + e.amt, 0);
+
+    document.getElementById('stat-total').textContent  = fmt(total);
+    document.getElementById('stat-month').textContent  = fmt(monthTotal);
+    document.getElementById('stat-count').textContent  = expenses.length;
+    document.getElementById('stat-avg').textContent    = expenses.length ? fmt(total / expenses.length) : '₹0';
+
+    // Category bars
+    const catTotals = {};
+    expenses.forEach(e => { catTotals[e.cat] = (catTotals[e.cat] || 0) + e.amt; });
+    const sorted = Object.entries(catTotals).sort((a,b) => b[1]-a[1]);
+    const maxVal = sorted[0]?.[1] || 1;
+    document.getElementById('cat-bars').innerHTML = sorted.length
+      ? sorted.map(([cat, val]) => `
+          <div class="bar-item">
+            <div class="bar-label">
+              <span>${emojis[cat]} ${cat}</span>
+              <span style="color:var(--text2)">${fmt(val)}</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:${Math.round(val/maxVal*100)}%; background:${catColors[cat]};"></div>
+            </div>
+          </div>`).join('')
+      : '<p class="empty" style="padding:1rem 0">No data yet</p>';
+
+    // Recent list
+    document.getElementById('recent-list').innerHTML = expenses.slice(0,5).length
+      ? expenses.slice(0,5).map(e => `
+          <div class="recent-item">
+            <div>
+              <div class="recent-desc">${emojis[e.cat]} ${e.desc}</div>
+              <div class="recent-date">${e.date}</div>
+            </div>
+            <div class="recent-amt">${fmt(e.amt)}</div>
+          </div>`).join('')
+      : '<p class="empty" style="padding:1rem 0">No expenses yet</p>';
+
+    // Table
+    document.getElementById('expense-table').innerHTML = filtered.length
+      ? `<table>
+          <thead><tr>
+            <th style="width:35%">Description</th>
+            <th style="width:20%">Category</th>
+            <th style="width:18%">Date</th>
+            <th style="width:17%; text-align:right">Amount</th>
+            <th style="width:10%"></th>
+          </tr></thead>
+          <tbody>
+            ${filtered.map(e => `
+              <tr>
+                <td title="${e.desc}">${e.desc}</td>
+                <td>${emojis[e.cat]} ${e.cat}</td>
+                <td>${e.date}</td>
+                <td style="text-align:right; font-weight:600">${fmt(e.amt)}</td>
+                <td style="text-align:center"><button class="danger" onclick="deleteExpense(${e.id})"><i class="ti ti-trash"></i></button></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>`
+      : '<p class="empty">No expenses found</p>';
+  }
+
+  render();
+</script>
+</body>
+</html>
